@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block title %}
+    首页
+{% endblock %}
+{% block custom_css %}
+    <style type="text/css">
+        .carousel-inner .item .banner-image {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="carousel slide" id="carousel-259185">
+            <ol class="carousel-indicators">
+                <li class="active" data-slide-to="0" data-target="#carousel-259185">
+                </li>
+                <li data-slide-to="1" data-target="#carousel-259185">
+                </li>
+                <li data-slide-to="2" data-target="#carousel-259185">
+                </li>
+            </ol>
+            <div class="carousel-inner">
+                {% for carousel in carousels %}
+                    <div class="item {% if forloop.counter == 1 %}active{% endif %}">
+                        <a href="{{ carousel.jump_url }}"><img class="banner-image" alt=""
+                                                               src="{{ carousel.image_url }}"/></a>
+                        <div class="carousel-caption">
+                            <h3>{{ carousel.title }}</h3>
+                            <p>{{ carousel.sub_title }}</p>
+                        </div>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+            <a data-slide="prev" href="#carousel-259185" class="left carousel-control"></a>
+            <a data-slide="next" href="#carousel-259185" class="right carousel-control"></a>
+        </div>
+        <h3>最新原型</h3>
+        <hr>
+        <div class="row">
+            {% for prototype in prototypes %}
+                <div class="col-md-4">
+                    <div class="tile">
+                        <img src="{% if prototype.image %}{{ MEDIA_URL }}{{ prototype.image }}{% else %}{% static 'img/default.jpeg' %}{% endif %}" alt="{{ prototype.name }}"
+                             class="tile-image">
+                        <h3 class="tile-title">{{ prototype.name }}</h3>
+                        <p>所属项目：{{ prototype.project.name }}</p>
+                        <a class="btn btn-primary btn-large btn-block"
+                           href="{% url 'main:prototype_detail' prototype.id %}">查看详情</a>
+                    </div>
+
+                </div>
+
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

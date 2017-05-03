@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}
+    编辑原型
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2>编辑原型:ID#{{ prototype.id }}</h2>
+        <hr>
+        <form action="{% url 'main:prototype_edit' prototype.id %}" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="project">所属项目(*)</label>
+                <select name="project" class="form-control" id="project">
+                    {% for project in projects %}
+                        <option value="{{ project.id }}"
+                                {% if project.id == prototype.project.id %}selected="selected"{% endif %}>
+                            {{ project.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if request.user.is_authenticated %}
+                <p>选择为当前用户拥有的项目，如果没有，请<a href="{% url 'main:add_project' %}">添加项目</a></p>
+            {% endif %}
+            <div class="form-group">
+                <label for="name">原型名称(*)</label>
+                <input name="name" type="text" class="form-control" id="name" placeholder="原型名称"
+                       value="{{ prototype.name }}">
+            </div>
+            <div class="form-group">
+                <label for="detail">原型描述</label>
+                <textarea name="detail" class="form-control" id="detail"
+                          placeholder="原型描述">{{ prototype.detail }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <img style="display: block;" src="{{ MEDIA_URL }}{{ prototype.image }}" alt="">
+
+                <label for="image">上传新图片（可选）</label>
+                <input name="image" type="file" id="image" accept="image/png,image/jpg,image/jpeg"/>
+                <p class="help-block">上传图片可用于展示</p>
+            </div>
+
+            {#            <div class="form-group">#}
+            {#                <label for="zip_file">上传文件(*)</label>#}
+            {#                <input name="zip_file" type="file" id="zip_file" accept="application/zip">#}
+            {#                <p class="help-block">请将Axsure原型文件夹，压缩为zip压缩包上传</p>#}
+            {#            </div>#}
+
+            <button type="submit"
+                    class="btn btn-primary btn-block {% if not request.user.is_authenticated %}disabled{% endif %}">提交修改
+            </button>
+            {% if not request.user.is_authenticated %}
+                <p>上传原型需要登录用户，用户登录名和密码请找管理员要</p>
+            {% endif %}
+            {% csrf_token %}
+            <a href="{% url 'users:my_prototype' %}" class="btn btn-danger btn-block edit-btn-back">返回</a>
+        </form>
+
+    </div>
+
+
+
+{% endblock %}

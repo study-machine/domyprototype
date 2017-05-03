@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}
+    我的项目
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2>我的项目</h2>
+        <hr>
+
+        <table class="table table-bordered table-hover table-striped">
+            <thead>
+            <tr>
+                <th>项目ID</th>
+                <th>项目名称</th>
+                <th>包含原型</th>
+                <th>所属用户</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for project in projects %}
+                <tr>
+                    <td>{{ project.id }}</td>
+                    <td>{{ project.name }}</td>
+                    <td>{{ project.get_prototype_number }}</td>
+                    <td>{{ project.user.nick_name }}</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="{% url 'main:project_detail' project.id %}">查看详情</a>
+                        <a class="btn btn-info btn-sm" href="{% url 'main:project_edit' project.id %}">编辑</a>
+                        <a class="btn btn-danger btn-sm" href="{% url 'main:project_delete' project.id %}">删除</a>
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+        {% if error_msg %}
+            <div class="alert alert-danger" role="alert">{{ error_msg }}</div>
+        {% endif %}
+    </div>
+{% endblock %}

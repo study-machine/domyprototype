@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}
+    原型列表
+{% endblock %}
+{% block content %}
+    <div class="container">
+        {% if search_keyword %}
+            <h2>搜索：{{ search_keyword }}</h2>
+        {% else %}<h2>原型列表</h2>
+        {% endif %}
+        <hr>
+
+        <table class="table table-bordered table-hover table-striped">
+            <thead>
+            <tr>
+                <th>原型ID</th>
+                <th>原型名称</th>
+                <th>所属项目</th>
+                <th>所属用户</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for prototype in prototypes %}
+                <tr>
+                    <td>{{ prototype.id }}</td>
+                    <td>{{ prototype.name }}</td>
+                    <td><a href="{% url 'main:project_detail' prototype.project.id %}">{{ prototype.project.name }}</a>
+                    </td>
+                    <td>{{ prototype.user.nick_name }}</td>
+                    <td>{{ prototype.update_time }}</td>
+                    <td><a href="{% url 'main:prototype_detail' prototype.id %}">查看详情</a></td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+        <div style="text-align: center">
+            {% include 't_pagination.html' with pages=prototypes %}
+        </div>
+    </div>
+
+{% endblock %}

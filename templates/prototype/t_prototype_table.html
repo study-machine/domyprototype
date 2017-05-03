@@ -1,0 +1,25 @@
+<table class="table table-bordered table-hover table-striped">
+    <thead>
+    <tr>
+        <th>原型ID</th>
+        <th>原型名称</th>
+        <th>所属项目</th>
+        <th>所属用户</th>
+        <th>更新时间</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for prototype in prototypes %}
+        <tr>
+            <td>{{ prototype.id }}</td>
+            <td>{{ prototype.name }}</td>
+            <td>{{ prototype.project.name }}</td>
+            <td>{{ prototype.user.nick_name }}</td>
+            <td>{{ prototype.update_time }}</td>
+            <td><a href="{% url 'main:prototype_detail' prototype.id %}">查看详情</a></td>
+        </tr>
+    {% endfor %}
+
+    </tbody>
+</table>

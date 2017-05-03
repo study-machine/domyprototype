@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}
+    原型详情-{{ prototype.name }}
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-12"><img class="img-responsive prototype-img center-block"
+                                        src="{{ MEDIA_URL }}{{ prototype.image }}" alt=""></div>
+            <div class="col-md-12"><h2>{{ prototype.name }}</h2></div>
+            <div class="col-md-12 detail-box">
+                <div class="col-md-12"><p>所属项目：{{ prototype.project.name }}</p></div>
+                <div class="col-md-12"><p>原型描述：{{ prototype.detail }}</p></div>
+                <hr>
+                <div class="col-md-4"><span>所属用户：{{ prototype.user.nick_name }}</span></div>
+                <div class="col-md-4"><span>创建：{{ prototype.create_time }}</span></div>
+                <div class="col-md-4"><span>更新：{{ prototype.update_time }}</span></div>
+            </div>
+
+        </div>
+        <a class="btn btn-primary btn-block btn-view-prototype" href="{{ MEDIA_URL }}{{ prototype.index_url }}"
+           target="_blank">查看原型</a>
+    </div>
+
+{% endblock %}

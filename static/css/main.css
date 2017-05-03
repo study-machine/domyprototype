@@ -1,0 +1,49 @@
+
+
+footer {
+    height: 150px;
+    text-align: center;
+    background-color: #34495e;
+    padding: 30px;
+    margin-top: 50px;
+}
+
+footer p {
+    margin: 30px;
+}
+
+
+.tile {
+    /*height: 350px;*/
+}
+
+.tile img {
+    width: 80%;
+}
+
+.tile p {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    margin-top: 20px;
+}
+
+.detail-box {
+    border: 1px solid #16a085;
+    border-radius: 10px;
+    margin: 30px 0;
+    padding: 20px;
+}
+
+.edit-btn-back {
+    margin-top: 20px;
+}
+
+table th {
+    text-align: center;
+}
+
+table td {
+    text-align: center;
+}
+

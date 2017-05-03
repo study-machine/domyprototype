@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}
+    用户中心
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2>用户中心</h2>
+        <hr>
+        <span>用户名:{{ request.user.username }}</span><br>
+        <span>昵称:{{ request.user.nick_name }}</span><br>
+        <span>邮箱:{{ request.user.email }}</span>
+        <a data-toggle="modal" data-target="#changeEmailModalBox" href="#"> 修改绑定邮箱</a><br>
+        <span>激活状态:{{ request.user.is_active }}</span><br>
+
+
+        <!-- 模态框（Modal）修改绑定邮箱 -->
+        <div class="modal fade" id="changeEmailModalBox" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">修改绑定邮箱</h4>
+                    </div>
+                    <div class="modal-body" id="changeEmailModalBody">
+                        <p>输入新的邮箱，并发送验证到新邮箱，点击链接完成绑定邮箱的修改</p>
+                        <form class="form">
+                            <div class="form-group">
+                                <label for="newEmail">新的邮箱:</label>
+                                <input type="email" class="form-control" id="newEmail" placeholder="请输入新的邮箱">
+                            </div>
+                        </form>
+                        <button type="submit" class="btn btn-primary btn-block" id="sendEmail">发送邮件</button>
+                        <br>
+                        <div id="alertChangeEmail" class="alert"></div>
+                        <form class="form">
+                            <label for="verificationCode">验证码:</label>
+                            <input type="email" class="form-control" id="verificationCode" placeholder="请输入收到的验证码">
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-info" id="submitUpdateEmail">修改邮箱</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+    </div>{#    end of container#}
+{% endblock %}
+
+{% block custom_js %}
+    <script type="text/javascript">
+        var _alert = $('#alertChangeEmail');
+
+        // 发送修改邮箱邮件
+        $('#sendEmail').click(function () {
+            $.ajax({
+                url: '{% url 'users:send_change_email' %}',
+                type: 'post',
+                dataType: 'json',
+                data: {'email': $('#newEmail').val(), csrfmiddlewaretoken: '{{ csrf_token }}'},
+                success: function (data) {
+                    _alert.removeClass('alert-success alert-danger')
+                    if (data.status == 'success') {
+                        _alert.addClass('alert-success')
+                        _alert.html('向' + data.new_email + '验证邮件发送成功')
+                    }
+                    else {
+                        _alert.addClass('alert-danger')
+                        _alert.html(data.error_msg)
+                    }
+                    _alert.show()
+                }
+            })
+        })
+
+        // 提交验证码
+        $('#submitUpdateEmail').click(function () {
+            $.ajax({
+                url: '{% url 'users:update_email' %}',
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    'code': $('#verificationCode').val(),
+                    'userId': '{{ request.user.id }}',
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function (data) {
+                    if (data.status == 'success') {
+                        window.location.reload()
+                    }
+                    else {
+                        _alert.removeClass('alert-success alert-danger')
+                        _alert.addClass('alert-danger')
+                        _alert.html('邮箱修改失败，请确认验证码')
+                    }
+                }
+            })
+        })
+    </script>
+
+{% endblock %}
