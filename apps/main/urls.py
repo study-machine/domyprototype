@@ -21,6 +21,4 @@ urlpatterns = [
     url(r'^project_edit/(?P<project_id>\d+)/$', ProjectEditView.as_view(), name='project_edit'),
     url(r'^project_delete/(?P<project_id>\d+)/$', ProjectDeleteView.as_view(), name='project_delete'),
 
-    url(r'^introduction/$', IntroductionView.as_view(), name='introduction'),
-
 ]

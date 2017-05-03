@@ -163,10 +163,6 @@ class PrototypeDeleteView(View):
             return HttpResponseRedirect(reverse('users:my_prototype'))
 
 
-class IntroductionView(View):
-    def get(self, request):
-        return render(request, 'introduction.html', {})
-
 
 class ProjectDetailView(View):
     def get(self, request, project_id):

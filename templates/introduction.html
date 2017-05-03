@@ -3,6 +3,7 @@
 {% block title %}
     使用说明
 {% endblock %}
+
 {% block content %}
     <div class="container">
         <h2>使用说明</h2>
@@ -30,21 +31,14 @@
         <p>编辑原型可以修改原型项目、原型名称、原型说明、原型图片，但是暂时不支持替换原型文件</p>
         <p>如果想替换原型文件，删了之前的，再上传一次</p>
         <img src="{% static 'img/introduct_4.png' %}" alt="">
+
+
         <h2>版本</h2>
         <hr>
-        <h4>1.0.0</h4>
-        <p>2017-3-1</p>
-        <p>创建项目：用户登录、原型上传、编辑删除，原型列表和详情展示</p>
-        <p>暂未开发功能：用户无注册和修改资料，项目只有一个名称和说明，没有扩展功能。轮播推荐位暂未向用户开放</p>
-        <h4>1.0.1</h4>
-        <p>2017-3-2</p>
-        <p>增加了搜索功能、原型列表分页</p>
-        <p>增加了原型上传提交错误后的数据回填</p>
-        <h4>1.0.2</h4>
-        <p>2017-3-8</p>
-        <p>解决了Windows系统，文件编码为GBK导致的解压缩失败问题</p>
-        <h4>1.1.0</h4>
-        <p>2017-3-14</p>
-        <p>增加了项目列表、我的项目，对项目的编辑和删除</p>
-    </div>
+        {% for version in all_versions %}
+            <h4>{{ version.version_number }}</h4>
+            <p>{{ version.version_update_time }}</p>
+            <p>{{ version.desc }}</p>
+        {% endfor %}
+    </div>{#end of container#}
 {% endblock %}
