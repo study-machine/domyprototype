@@ -40,6 +40,7 @@ def send_email(email, send_type):
 
     try:
         send_status = send_mail(email_title, email_body, EMAIL_FROM, [email])
+        # send_status = send_mail('test', 'test', 'machine@wangxiyang.com', ['brook45@163.com'])
     except Exception, e:
         print e
         return

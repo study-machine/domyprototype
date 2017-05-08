@@ -16,4 +16,5 @@ urlpatterns = [
     url(r'^my_prototype/$', MyPrototypeView.as_view(), name='my_prototype'),
     url(r'^my_project/$', MyProjectView.as_view(), name='my_project'),
     url(r'^send_change_email/$', SendChangeEmail.as_view(), name='send_change_email'),
+    url(r'^update_nickname/$', UpdateNickName.as_view(), name='update_nickname'),
 ]

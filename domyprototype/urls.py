@@ -29,4 +29,5 @@ urlpatterns = [
     url(r'^main/', include('main.urls', namespace='main')),
     url(r'^users/', include('users.urls', namespace='users')),
     url(r'^others/', include('others.urls', namespace='others')),
+    url(r'^statistics/', include('statistics.urls', namespace='statistics')),
 ]

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'main',
     'users',
     'others',
+    'statistics',
 ]
 
 AUTH_USER_MODEL = 'users.UserProfile'
@@ -151,10 +152,12 @@ else:
 EMAIL_HOST = 'smtp.mxhichina.com'
 EMAIL_HOST_USER = 'machine@wangxiyang.com'
 EMAIL_HOST_PASSWORD = 'Wxy123456'
-EMAIL_PORT = 25
-EMAIL_USE_TLS = False
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
 EMAIL_FROM = 'machine@wangxiyang.com'
-#
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 # EMAIL_HOST = 'smtp.163.com'
 # EMAIL_PORT = 25
 # EMAIL_HOST_USER = 'brook45@163.com'
@@ -168,3 +171,4 @@ EMAIL_FROM = 'machine@wangxiyang.com'
 # EMAIL_HOST_PASSWORD = 'asd123'
 # EMAIL_USE_TLS = False
 # EMAIL_FROM = 'study_machine@163.com'
+#send_mail('test', 'test', 'brook45@163.com', ['brook45@163.com'])

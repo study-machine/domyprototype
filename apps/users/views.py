@@ -182,3 +182,24 @@ class UpdateEmail(View):
                 return JsonResponse({'status': 'success'})
         else:
             return JsonResponse({'status': 'fail', 'error_msg': 'v_code not find'})
+
+
+class UpdateNickName(View):
+    def post(self, request):
+        new_nickname = request.POST.get('new_nickname', 0)
+        if not new_nickname:
+            return self.return_error('昵称不能为空')
+        if len(new_nickname) > 64:
+            return self.return_error('昵称长度不能超过64')
+
+        user = UserProfile.objects.get(username=request.user.username)
+        user.nick_name = new_nickname
+        user.save()
+        return JsonResponse({'status': 'success'})
+
+    def return_error(self, error_msg):
+        data = {
+            'status': 'fail',
+            'error_msg': error_msg
+        }
+        return JsonResponse(data)
