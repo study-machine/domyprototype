@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block title %}
+    可视化数据(尝鲜版)-大麦盒子活跃用户分布
+{% endblock %}
+{% block custom_css %}
+    <link href="{% static 'css/bootstrap-datetimepicker.min.css' %}"
+          rel="stylesheet">
+    <style type="text/css">
+        .main_chart {
+            height: 800px;
+            width: 100%;
+            border: 5px dashed #333;
+        }
+
+        .pie-chart {
+            height: 360px;
+            width: 100%;
+        {#                        border: 1px dashed #333;#}
+
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2>大麦盒子线上收款金额统计</h2>
+        <hr>
+        <h5>昨日({{ yesterday_data.date }})金额和比例：</h5>
+        <div class="yesterdaybox">
+            <div class="row">
+                <div class="yesterday-table col-md-6">
+                    <table class="table table-bordered table-hover table-striped">
+                        <thead>
+                        <tr>
+                            <th>产品类型</th>
+                            <th>收款金额</th>
+                            <th>百分比</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="others_tbody">
+                        {% for value in yesterday_data.category.values %}
+                            <tr>
+                                <td>{{ value.1 }}</td>
+                                <td>{{ value.0 }}</td>
+                                <td>{{ value.2 }}%</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td>日收款总额</td>
+                            <td>{{ yesterday_data.total_sum }}</td>
+                            <td>100%</td>
+                        </tr>
+                        </tfoot>
+                    </table>
+
+                </div>
+                <div class="pie-box col-md-6">
+                    <div class="pie-chart" id="chartForYesterdayPie"></div>
+                </div>
+            </div>
+        </div>
+        <h5>历史每日数据统计：</h5>
+        <div class="chart-box">
+            <div class="main_chart" id="chartForReceiptLine"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block custom_js %}
+    <script src="{% static 'js/jquery.js' %}"></script>
+    <script src="{% static 'js/echarts.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-datetimepicker.min.js' %}"></script>
+
+    <script>
+
+        var optionForYesterday = {
+            title: {
+                {#                text: '昨日({{ yesterday_data.date }})收款金额统计',#}
+                {#                subtext: '日收款总额:{{ yesterday_data.total_sum }}元',#}
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c}元 ({d}%)"
+            },
+            legend: {
+                orient: 'vertical',
+                right: 50,
+                data: ['VIP', '极清首映', '商品包', '应用', '充值']
+            },
+            series: [
+                {
+                    name: '收款金额',
+                    type: 'pie',
+                    radius: '80%',
+                    center: ['40%', '50%'],
+                    data: [
+                        {value: {{ yesterday_data.category.vip_sum.0 }}, name: 'VIP'},
+                        {value: {{ yesterday_data.category.premiere_sum.0 }}, name: '极清首映'},
+                        {value: {{ yesterday_data.category.pack_sum.0 }}, name: '商品包'},
+                        {value: {{ yesterday_data.category.app_sum.0 }}, name: '应用'},
+                        {value: {{ yesterday_data.category.recharge_sum.0 }}, name: '充值'}
+                    ],
+
+                    itemStyle: {
+                        emphasis: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+
+        var optionForReceiptLine = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+                    type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                }
+            },
+            legend: {
+                data: ['日总金额', 'VIP', '极清首映', '商品包', '应用', '充值']
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: {{ date | safe}}
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value'
+                }
+            ],
+            dataZoom: [
+                {
+                    type: 'inside',
+                    start: 80,
+                    end: 100
+                },
+                {
+                    type: 'slider',
+                    start: 80,
+                    end: 100
+                }
+            ],
+            series: [
+                {
+                    name: '日总金额',
+                    type: 'line',
+                    data: {{ total_sum }},
+                    markPoint: {
+                        data: [
+                            {type: 'max', name: 'max', symbolSize: 50, label: {normal: {formatter: '{b}'}}},
+                            {type: 'min', name: 'min', symbolSize: 50, label: {normal: {formatter: '{b}'}}}
+                        ]
+                    },
+                    markLine: {
+                        data: [
+                            {type: 'average', name: '平均值'}
+                        ]
+                    }
+                },
+                {
+                    name: 'VIP',
+                    type: 'bar',
+                    stack: '总收款',
+                    data: {{ vip_sum }}
+                },
+                {
+                    name: '极清首映',
+                    type: 'bar',
+                    stack: '总收款',
+                    data: {{ premiere_sum }}
+                },
+                {
+                    name: '商品包',
+                    type: 'bar',
+                    stack: '总收款',
+                    data: {{ pack_sum }}
+                },
+                {
+                    name: '应用',
+                    type: 'bar',
+                    stack: '总收款',
+                    data: {{ app_sum }}
+                },
+                {
+                    name: '充值',
+                    type: 'bar',
+                    stack: '总收款',
+                    data: {{ recharge_sum }}
+                }
+
+            ]
+        };
+
+
+        var chartReceiptLine = echarts.init(document.getElementById('chartForReceiptLine'));
+        chartReceiptLine.setOption(optionForReceiptLine);
+
+        var chartReceiptPie = echarts.init(document.getElementById('chartForYesterdayPie'));
+        chartReceiptPie.setOption(optionForYesterday);
+
+
+        {#        function chartUpdate(cityData) {#}
+        {#            chartReceiptLine.setOption({})#}
+        {#        }#}
+        {#        //向服务器请求数据#}
+        {#        function requestData(days, endDate) {#}
+        {#            $.ajax({#}
+        {#                url: '{% url 'statistics:launch_num' %}',#}
+        {#                data: {'end_date': endDate, 'days': days},#}
+        {#                type: 'get',#}
+        {#                success: requestSuccess,#}
+        {#                error: function (result) {#}
+        {#                    alert('ajax请求失败')#}
+        {#                }#}
+        {#            })#}
+        {#        }#}
+        {#        //获取数据成功，更新表格#}
+        {#        function requestSuccess(result) {#}
+        {#        }#}
+
+    </script>
+{% endblock %}
+
+
+
+
+
+
+
+
+

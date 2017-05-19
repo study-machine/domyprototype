@@ -1,0 +1,435 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block title %}
+    可视化数据(尝鲜版)-大麦盒子活跃用户分布
+{% endblock %}
+{% block custom_css %}
+    <link href="{% static 'css/bootstrap-datetimepicker.min.css' %}"
+          rel="stylesheet">
+    <style type="text/css">
+        .main_chart {
+            height: 800px;
+            width: 100%;
+            border: 5px dashed #333;
+        }
+
+        .main_chart hr {
+            margin: 5px 0;
+        }
+
+        .total-others {
+            border: 2px solid #34495e;
+            margin: 20px 0;
+        }
+
+        .total {
+            font-size: 28px;
+        }
+
+        .total > div:first-child {
+            font-size: 40px;
+        }
+
+        .main-number {
+            color: red;
+        }
+
+        .total-dt {
+            text-align: right;
+            display: inline-block;
+            width: 40%;
+        }
+
+        .total-dd {
+            text-align: left;
+            display: inline-block;
+
+        }
+
+        .select-days {
+            height: 55px;
+            width: 200px;
+            text-indent: 5px;
+        }
+
+        .form_datetime {
+            text-indent: 5px;
+        }
+
+        .other {
+            overflow-y: scroll;
+            height: 350px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2>大麦盒子开机统计</h2>
+        <hr>
+        <div class="total-others">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="total">
+                        <div>
+                            <dt class="total-dt">总开机量:</dt>
+                            <dd class="total-dd main-number" id="total_num"></dd>
+                        </div>
+                        <div>
+                            <dt class="total-dt">总量日均:</dt>
+                            <dd class="total-dd main-number" id="total_num_average"></dd>
+                        </div>
+                        <div>
+                            <dt class="total-dt">地图内总量/日均:</dt>
+                            <dd class="total-dd" id="china_sum"></dd>
+                        </div>
+                        <div>
+                            <dt class="total-dt">3.0UI总量/日均:</dt>
+                            <dd class="total-dd" id="domy3_total"></dd>
+                        </div>
+                        <div>
+                            <dt class="total-dt">2.0UI总量/日均:</dt>
+                            <dd class="total-dd" id="domy2_total"></dd>
+                        </div>
+                    </div>
+                    <div class="change-time" style="margin: 20px;">
+                        <form class="form-inline">
+                            <label for="datetimepicker">截至时间:</label>
+                            <input type="text" id="datetimepicker" class="form-control form_datetime">
+
+                            <label for="selectDays">时间区间:</label>
+                            <select id="selectDays" class="form-control">
+                                <option value="1">最近1日</option>
+                                <option value="7">最近7日</option>
+                                <option value="30">最近30日</option>
+                                <option value="60">最近60日</option>
+                                <option value="120">最近120日</option>
+                                <option value="365">最近365日</option>
+                            </select>
+                        </form>
+                        <button id="btnRequest" class="btn btn-primary btn-block" style="margin-top: 20px;">查询</button>
+                        <p style="font-size: 12px;">注：统计后台最近日期数据，为昨天的统计。</p>
+                    </div>
+
+
+                </div>
+                <div class="col-md-6">
+                    <p style="margin: 0;">地图外数据:</p>
+                    <div class="other">
+                        <table class="table table-bordered table-hover table-striped">
+                            <thead>
+                            <tr>
+                                <th>分公司名称</th>
+                                <th>UI2.0</th>
+                                <th>UI3.0</th>
+                                <th>合计</th>
+                                <th>合计日均</th>
+                            </tr>
+                            </thead>
+                            <tbody id="others_tbody">
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <h5>城市散点图：</h5>
+        <div class="chart-box">
+            <div class="main_chart" id="chartForScatter"></div>
+        </div>
+        <h5>省份热力图：</h5>
+        <div class="chart-box">
+            <div class="main_chart" id="chartForProvince"></div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block custom_js %}
+    <script src="{% static 'js/jquery.js' %}"></script>
+    <script src="{% static 'js/echarts.min.js' %}"></script>
+    <script src="{% static 'js/china.js' %}"></script>
+    <script src="{% static 'js/bootstrap-datetimepicker.min.js' %}"></script>
+
+    <script>
+
+        $('#datetimepicker').datetimepicker({
+            // 设置datepicker格式
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayBtn: true,
+            todayHighlight: true,
+            minView: 'month'
+        });
+
+        function getYesterday() {
+            var date = new Date(new Date() - 24 * 60 * 60 * 1000)
+            return date.getFullYear() + '-' +
+                (date.getMonth() + 1) + '-' + date.getDate()
+        }
+
+        var endDate = getYesterday();
+        var days = 1;
+        var jsonResult = {};
+        $('#datetimepicker').val(endDate);
+        $('#selectDays').val(days);
+
+        // 设置echarts图表
+        function parseValue(l) {
+            var domy2 = 0, domy3 = 0;
+            var value = l[2];
+            var tooltip = '';
+
+            for (var v in value) {
+                domy2 += value[v].domy2;
+                domy3 += value[v].domy3;
+                tooltip += value[v].company + '<br>' + 'DomyUI2:' + domy2 + '<br>' + 'DomyUI3:' + domy3 + '<br>'
+            }
+            var total = domy2 + domy3;
+            tooltip += '<hr>合计:' + total + '';
+            return [total, tooltip]
+        }
+
+        var optionForCity = {
+            // backgroundColor: '#404a59',
+            title: {
+                text: '分公司城市开机散点图',
+                left: 'center',
+                top: 20
+            },
+            // 全局提示框
+            tooltip: {
+                trigger: 'item',
+                padding: 10,
+                formatter: function (obj) {
+                    return obj.name + '<hr>' + parseValue(obj.value)[1];
+
+                }
+            },
+            // 图例
+            legend: {
+                orient: 'vertical',
+                y: 'bottom',
+                x: 'right',
+                data: ['大麦UI开机量'],
+                textStyle: {
+//                color: '#fff'
+                }
+            },
+            geo: {
+                //geo地图组件
+                map: 'china',
+                // 省份标签
+                label: {
+                    // 高亮状态下是否显示
+                    emphasis: {
+                        show: false
+                    }
+                },
+                scaleLimit: {
+                    min: 1.2
+                },
+                center: [110, 35],
+                zoom: 1.4,
+                //鼠标平移漫游
+                roam: true,
+                // 地图区域多边形样式
+            },
+            // 系列列表，每个列表由type决定类型
+            series: [
+                {
+                    name: '大麦UI开机量', // 用户tooltip显示
+                    //type: 'scatter',
+                    type: 'effectScatter',
+                    coordinateSystem: 'geo', //坐标系，geo为地理坐标系
+                    // rippleEffect:{brushType:'stroke'},
+                    data: [],  //city_data
+
+                    // 标记大小
+                    symbolSize: function (value) {
+                        var num = parseValue(value)[0] / days;
+                        var res = Math.sqrt(num) / 5;
+                        if (res < 5) res = 5; //太小看不见的设置为5
+                        return res;
+                    },
+
+                    //数据标签
+                    label: {
+                        normal: {
+                            formatter: '{b}', //{a}{b}{c}系列名、数据名、数据值
+                            position: 'right',
+                            show: false
+                        },
+                        emphasis: {
+                            //高亮状态下
+                            show: true
+                        }
+                    },
+                    // 图形样式
+                    itemStyle: {
+                        normal: {
+                            color: 'rgba(255,0,0,.7)'
+                        }
+                    }
+                }
+            ]
+        };
+
+        var optionForProvince = {
+            visualMap: {
+                min: 0,
+                max: 0, //provinceMax
+                right: 50,
+                bottom: 20,
+                text: ['最高', '最低'],
+                dimension: 1,
+                inRange: {
+                    color: ['lightskyblue', 'red']
+                },
+                calculable: true
+            },
+            tooltip: {
+                trigger: 'item',
+                padding: 10,
+                formatter: function (obj) {
+                    var text = obj.name + '总量: ' + obj.data.value[1] + '<hr>';
+                    text += 'DomyUI2.0: ' + obj.data.value[2] + '<br>';
+                    text += 'DomyUI3.0: ' + obj.data.value[3];
+                    return text
+                }
+            },
+            itemStyle: {
+                emphasis: {
+                    areaColor: '#fff',
+                    color: '#fff',
+                    shadowColor: 'rgba(0, 0, 0, 0.3)',
+                    shadowBlur: 10,
+                    shadowOffsetX: 5,
+                    shadowOffsetY: 5,
+                    borderWidth: 1
+                }
+            },
+            series: [{
+                type: 'map',
+                map: 'china',
+                center: [110, 35],
+                zoom: 1.2,
+                data: [] //provinceDate
+            }],
+            title: {
+                text: '省份开机热力图',
+                left: 'center',
+                top: 20
+            },
+
+        };
+
+        var chartForCity = echarts.init(document.getElementById('chartForScatter'));
+        var chartForProvince = echarts.init(document.getElementById('chartForProvince'));
+        chartForCity.setOption(optionForCity);
+        chartForProvince.setOption(optionForProvince);
+
+        function cityChartUpdate(cityData) {
+            chartForCity.setOption({
+                series: [{data: cityData}]
+            })
+        }
+        function ProvinceChartUpdate(provinceData, provinceMax) {
+            chartForProvince.setOption({
+                series: [{data: provinceData}],
+                visualMap: {max: provinceMax}
+            })
+        }
+
+        //按钮绑定事件
+        $('#btnRequest').click(function () {
+            endDate = $('#datetimepicker').val();
+            days = $('#selectDays').children('option:selected').val();
+            requestData(days, endDate)
+        });
+
+        requestData(days, endDate);
+
+        var chartHeadList = [
+            $('#total_num'),
+            $('#total_num_average'),
+            $('#china_sum'),
+            $('#domy2_total'),
+            $('#domy3_total')
+        ];
+        //向服务器请求数据
+        function requestData(days, endDate) {
+            chartForCity.showLoading()
+            chartForProvince.showLoading()
+            for (var index in chartHeadList) {
+                chartHeadList[index].html('请求数据中...')
+            }
+            $.ajax({
+                url: '{% url 'statistics:launch_num' %}',
+                data: {'end_date': endDate, 'days': days},
+                type: 'get',
+                success: requestSuccess,
+                error: function (result) {
+                    alert('ajax请求失败')
+                }
+            })
+        }
+
+        //获取数据成功，更新表格
+        function requestSuccess(result) {
+            if (result.error_msg != '') {
+                //更新统计数据
+                for (var index in chartHeadList) {
+                    chartHeadList[index].html(result.error_msg)
+                }
+                return
+            }
+            else {
+            }
+            //更新chart数据
+            cityChartUpdate(result.city_data);
+            ProvinceChartUpdate(result.province_data, result.province_max);
+            chartForCity.hideLoading()
+            chartForProvince.hideLoading()
+            //更新统计数据
+            $('#total_num').html(result.domy2_total + result.domy3_total);
+            $('#total_num_average').html(parseInt((result.domy2_total + result.domy3_total) / days));
+            $('#china_sum').html(result.china_sum + ' / ' + parseInt(result.china_sum / days));
+            $('#domy2_total').html(result.domy2_total + ' / ' + parseInt(result.domy2_total / days));
+            $('#domy3_total').html(result.domy3_total + ' / ' + parseInt(result.domy3_total / days));
+
+            var $tbody = $('#others_tbody');
+            var $tr = $tbody.find('tr:first-child').clone();
+            $tbody.empty();
+            var others = result.others;
+            for (var i in result.others) {
+                $tr.empty();
+                $tr.append('<td>' + others[i][0] + '</td>');
+                $tr.append('<td>' + others[i][1] + '</td>');
+                $tr.append('<td>' + others[i][2] + '</td>');
+                $tr.append('<td>' + (others[i][1] + others[i][2]) + '</td>');
+                $tr.append('<td>' + parseInt((others[i][1] + others[i][2]) / days) + '</td>');
+                $tbody.append($tr.clone())
+            }
+
+        }
+
+
+    </script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
