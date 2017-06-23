@@ -8,7 +8,7 @@
           rel="stylesheet">
     <style type="text/css">
         .main_chart {
-            height: 800px;
+            height: 500px;
             width: 100%;
             border: 5px dashed #333;
         }
@@ -16,9 +16,16 @@
         .pie-chart {
             height: 360px;
             width: 100%;
-        {#                        border: 1px dashed #333;#}
-
         }
+
+        .option {
+            margin: 20px 0;
+        }
+
+        .date-month {
+            float: right;
+        }
+
     </style>
 {% endblock %}
 {% block content %}
@@ -62,7 +69,24 @@
                 </div>
             </div>
         </div>
-        <h5>历史每日数据统计：</h5>
+        <h5>历史数据统计：</h5>
+        <div class="option">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-inline">
+                        <input type="text" id="datetimepicker" class="form-control form_datetime">
+                        <button id="btnRequest" class="btn btn-primary">开始日期</button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="date-month btn-group">
+                        <button id="viewMonth" class="btn btn-primary">月统计</button>
+                        <button id="viewDate" class="btn btn-default">日统计</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="chart-box">
             <div class="main_chart" id="chartForReceiptLine"></div>
         </div>
@@ -75,6 +99,25 @@
     <script src="{% static 'js/bootstrap-datetimepicker.min.js' %}"></script>
 
     <script>
+
+        $('#datetimepicker').datetimepicker({
+            // 设置datepicker格式
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayBtn: true,
+            todayHighlight: true,
+            minView: 'month'
+        });
+
+        // 初始历史查询日期位2016-1-1
+        var startDate = '{{ start_date }}';
+        var $dPicker = $('#datetimepicker');
+        $dPicker.val(startDate);
+
+        $('#btnRequest').click(function () {
+            startDate = $dPicker.val();
+            location.href = '{% url 'statistics:date_receipt' %}' + '?start_date=' + startDate;
+        });
 
         var optionForYesterday = {
             title: {
@@ -124,25 +167,54 @@
                 }
             },
             legend: {
-                data: ['日总金额', 'VIP', '极清首映', '商品包', '应用', '充值']
+                data: ['日总金额', '月总金额', 'VIP', '极清首映', '商品包', '应用', '充值']
             },
             grid: {
                 left: '3%',
                 right: '4%',
-                bottom: '3%',
+                bottom: '10%',
                 containLabel: true
             },
             xAxis: [
                 {
                     type: 'category',
-                    data: {{ date | safe}}
+                    data: []
                 }
             ],
+            dataZoom: [
+                {
+                    type: 'inside',
+                    start: 0,
+                    end: 100
+                },
+                {
+                    type: 'slider',
+                    start: 0,
+                    end: 100,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                }
+            ],
+            series: [],
             yAxis: [
                 {
                     type: 'value'
                 }
-            ],
+            ]
+
+        };
+
+        var dateOptionForUpdate = {
+            xAxis: [{
+                data: {{ history_date.date | safe}}
+            }],
             dataZoom: [
                 {
                     type: 'inside',
@@ -157,9 +229,47 @@
             ],
             series: [
                 {
+                    name: 'VIP',
+                    type: 'bar',
+                    stack: '总收款',
+                    data: {{ history_date.vip_sum }}
+                },
+                {
+                    name: '极清首映',
+                    type: 'bar',
+                    stack: '总收款',
+                    data: {{ history_date.premiere_sum }}
+                },
+                {
+                    name: '商品包',
+                    type: 'bar',
+                    stack: '总收款',
+                    data: {{ history_date.pack_sum }}
+                },
+                {
+                    name: '应用',
+                    type: 'bar',
+                    stack: '总收款',
+                    data: {{ history_date.app_sum }}
+                },
+                {
+                    name: '充值',
+                    type: 'bar',
+                    stack: '总收款',
+                    data: {{ history_date.recharge_sum }}
+                },
+                {
                     name: '日总金额',
                     type: 'line',
-                    data: {{ total_sum }},
+                    itemStyle: {
+                        normal: {
+                            color: '#B31800',
+                            lineStyle: {
+                                color: '#B31800'
+                            }
+                        }
+                    },
+                    data: {{ history_date.total_sum }},
                     markPoint: {
                         data: [
                             {type: 'max', name: 'max', symbolSize: 50, label: {normal: {formatter: '{b}'}}},
@@ -171,36 +281,84 @@
                             {type: 'average', name: '平均值'}
                         ]
                     }
+                }
+
+            ]
+        };
+
+        var monthOptionForUpdate = {
+            xAxis: [
+                {
+                    type: 'category',
+                    data: {{ history_month.month | safe}}
+                }
+            ],
+            dataZoom: [
+                {
+                    type: 'inside',
+                    start: 0,
+                    end: 100
                 },
+                {
+                    type: 'slider',
+                    start: 0,
+                    end: 100
+                }
+            ],
+            series: [
                 {
                     name: 'VIP',
                     type: 'bar',
                     stack: '总收款',
-                    data: {{ vip_sum }}
+                    data: {{ history_month.vip_sum }}
                 },
                 {
                     name: '极清首映',
                     type: 'bar',
                     stack: '总收款',
-                    data: {{ premiere_sum }}
+                    data: {{ history_month.premiere_sum }}
                 },
                 {
                     name: '商品包',
                     type: 'bar',
                     stack: '总收款',
-                    data: {{ pack_sum }}
+                    data: {{ history_month.pack_sum }}
                 },
                 {
                     name: '应用',
                     type: 'bar',
                     stack: '总收款',
-                    data: {{ app_sum }}
+                    data: {{ history_month.app_sum }}
                 },
                 {
                     name: '充值',
                     type: 'bar',
                     stack: '总收款',
-                    data: {{ recharge_sum }}
+                    data: {{ history_month.recharge_sum }}
+                },
+                {
+                    name: '月总金额',
+                    type: 'line',
+                    itemStyle: {
+                        normal: {
+                            color: '#B31800',
+                            lineStyle: {
+                                color: '#B31800'
+                            }
+                        }
+                    },
+                    data: {{ history_month.total_sum }},
+                    markPoint: {
+                        data: [
+                            {type: 'max', name: 'max', symbolSize: 50, label: {normal: {formatter: '{b}'}}},
+                            {type: 'min', name: 'min', symbolSize: 50, label: {normal: {formatter: '{b}'}}}
+                        ]
+                    },
+                    markLine: {
+                        data: [
+                            {type: 'average', name: '平均值'}
+                        ]
+                    }
                 }
 
             ]
@@ -214,24 +372,24 @@
         chartReceiptPie.setOption(optionForYesterday);
 
 
-        {#        function chartUpdate(cityData) {#}
-        {#            chartReceiptLine.setOption({})#}
-        {#        }#}
-        {#        //向服务器请求数据#}
-        {#        function requestData(days, endDate) {#}
-        {#            $.ajax({#}
-        {#                url: '{% url 'statistics:launch_num' %}',#}
-        {#                data: {'end_date': endDate, 'days': days},#}
-        {#                type: 'get',#}
-        {#                success: requestSuccess,#}
-        {#                error: function (result) {#}
-        {#                    alert('ajax请求失败')#}
-        {#                }#}
-        {#            })#}
-        {#        }#}
-        {#        //获取数据成功，更新表格#}
-        {#        function requestSuccess(result) {#}
-        {#        }#}
+        //绑定按键事件
+        var $btnDate = $('#viewDate');
+        var $btnMonth = $('#viewMonth');
+        $btnDate.click(function () {
+            $btnDate.addClass('btn-primary');
+            $btnDate.removeClass('btn-default');
+            $btnMonth.addClass('btn-default');
+            $btnMonth.removeClass('btn-primary');
+            chartReceiptLine.setOption(dateOptionForUpdate)
+        })
+        $btnMonth.click(function () {
+            $btnMonth.addClass('btn-primary');
+            $btnMonth.removeClass('btn-default');
+            $btnDate.addClass('btn-default');
+            $btnDate.removeClass('btn-primary');
+            chartReceiptLine.setOption(monthOptionForUpdate)
+        })
+        chartReceiptLine.setOption(monthOptionForUpdate)
 
     </script>
 {% endblock %}
