@@ -21,4 +21,5 @@ class DateReceiptStatistics(models.Model):
         ordering = ['-date']
 
     def __unicode__(self):
-        return self.date
+        from datetime import datetime
+        return datetime.strftime(self.date, '%Y-%m-%d') + ':' + str(self.total_sum)
