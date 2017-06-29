@@ -16,6 +16,9 @@ import sys
 PRODUCTION = False
 # PRODUCTION = True
 
+# get password by environ var
+my_email_password = os.environ['MY_EMAIL_PASSWORD']
+my_mysql_password = os.environ['MY_MYSQL_PASSWORD']
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -95,7 +98,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'prototype',
         'USER': 'root',
-        'PASSWORD': 'asd123',
+        'PASSWORD': my_mysql_password,
         'HOST': '60.205.218.205'
     }
 }
@@ -151,24 +154,9 @@ else:
 
 EMAIL_HOST = 'smtp.mxhichina.com'
 EMAIL_HOST_USER = 'machine@wangxiyang.com'
-EMAIL_HOST_PASSWORD = 'Wxy123456'
+EMAIL_HOST_PASSWORD = my_email_password
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_FROM = 'machine@wangxiyang.com'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-# EMAIL_HOST = 'smtp.163.com'
-# EMAIL_PORT = 25
-# EMAIL_HOST_USER = 'brook45@163.com'
-# EMAIL_HOST_PASSWORD = 'Poiu789'
-# EMAIL_USE_TLS = False
-# EMAIL_FROM = 'brook45@163.com'
-
-# EMAIL_HOST = 'smtp.163.com'
-# EMAIL_PORT = 25
-# EMAIL_HOST_USER = 'study_machine@163.com'
-# EMAIL_HOST_PASSWORD = 'asd123'
-# EMAIL_USE_TLS = False
-# EMAIL_FROM = 'study_machine@163.com'
-#send_mail('test', 'test', 'brook45@163.com', ['brook45@163.com'])
