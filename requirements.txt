@@ -4,7 +4,6 @@ ExtensionClass==4.3.0
 olefile==0.44
 packaging==16.8
 Pillow==4.0.0
-pycurl==7.43.0
 PyMySQL==0.7.10
 pyparsing==2.1.10
 requests==2.13.0
