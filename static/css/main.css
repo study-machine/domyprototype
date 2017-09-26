@@ -21,7 +21,7 @@ footer p {
     width: 80%;
 }
 
-.tile tile-title {
+.tile .tile-title {
     overflow: hidden;
     text-overflow:ellipsis;
     white-space: nowrap;
