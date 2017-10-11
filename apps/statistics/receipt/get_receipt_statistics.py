@@ -35,6 +35,7 @@ def fen_to_yuan(i):
     return round(i, 2) / 100
 
 
+
 def request_data(date):
     # 从大麦财务接口获取收款数据
     url = 'http://cms.finance.pthv.gitv.tv/receipt/getList.json'
@@ -132,16 +133,17 @@ class DomyReceiptStatistics(object):
         return yesterday_receipt
 
     def __parse_yesterday_data(self, yesterday_qs):
+        yesterday_content = yesterday_qs.first()
         yesterday_data = {
-            'date': datetime_to_string(yesterday_qs[0].date),
+            'date': datetime_to_string(yesterday_content.date),
             'category': {
-                'app_sum': [fen_to_yuan(yesterday_qs[0].app_sum), '应用'],
-                'premiere_sum': [fen_to_yuan(yesterday_qs[0].premiere_sum), '极清首映'],
-                'vip_sum': [fen_to_yuan(yesterday_qs[0].vip_sum), 'VIP'],
-                'pack_sum': [fen_to_yuan(yesterday_qs[0].pack_sum), '商品包'],
-                'recharge_sum': [fen_to_yuan(yesterday_qs[0].recharge_sum), '充值'],
+                'app_sum': [fen_to_yuan(yesterday_content.app_sum), '应用'],
+                'premiere_sum': [fen_to_yuan(yesterday_content.premiere_sum), '极清首映'],
+                'vip_sum': [fen_to_yuan(yesterday_content.vip_sum), 'VIP'],
+                'pack_sum': [fen_to_yuan(yesterday_content.pack_sum), '商品包'],
+                'recharge_sum': [fen_to_yuan(yesterday_content.recharge_sum), '充值'],
             },
-            'total_sum': fen_to_yuan(yesterday_qs[0].total_sum),
+            'total_sum': fen_to_yuan(yesterday_content.total_sum),
         }
         for k, v in yesterday_data['category'].items():
             yesterday_data['category'][k].append(round(v[0] / yesterday_data['total_sum'] * 100, 2))
@@ -161,14 +163,15 @@ class DomyReceiptStatistics(object):
 
     def __parse_date_history(self, receipt_qs):
         # 转化日收入数据
+
         self.history_date = {
-            'date': [datetime_to_string(q.date) for q in receipt_qs],
-            'app_sum': [fen_to_yuan(q.app_sum) for q in receipt_qs],
-            'premiere_sum': [fen_to_yuan(q.premiere_sum) for q in receipt_qs],
-            'vip_sum': [fen_to_yuan(q.vip_sum) for q in receipt_qs],
-            'pack_sum': [fen_to_yuan(q.pack_sum) for q in receipt_qs],
-            'recharge_sum': [fen_to_yuan(q.recharge_sum) for q in receipt_qs],
-            'total_sum': [fen_to_yuan(q.total_sum) for q in receipt_qs],
+            'date': [datetime_to_string(q.date) for q in receipt_qs if q.date],
+            'app_sum': [fen_to_yuan(q.app_sum) for q in receipt_qs if q.app_sum],
+            'premiere_sum': [fen_to_yuan(q.premiere_sum) for q in receipt_qs if q.recharge_sum],
+            'vip_sum': [fen_to_yuan(q.vip_sum) for q in receipt_qs if q.vip_sum],
+            'pack_sum': [fen_to_yuan(q.pack_sum) for q in receipt_qs if q.pack_sum],
+            'recharge_sum': [fen_to_yuan(q.recharge_sum) for q in receipt_qs if q.recharge_sum],
+            'total_sum': [fen_to_yuan(q.total_sum) for q in receipt_qs if q.total_sum],
         }
 
     def __parse_month_history(self, receipt_qs):
@@ -176,6 +179,7 @@ class DomyReceiptStatistics(object):
         month_receipt = OrderedDict()
         for q in receipt_qs:
             month_str = str(q.date.year) + '-' + str(q.date.month)
+
             if month_str not in month_receipt:
                 month_receipt[month_str] = {
                     'app_sum': q.app_sum,
@@ -186,12 +190,15 @@ class DomyReceiptStatistics(object):
                     'total_sum': q.total_sum,
                 }
             else:
-                month_receipt[month_str]['app_sum'] += q.app_sum
-                month_receipt[month_str]['premiere_sum'] += q.premiere_sum
-                month_receipt[month_str]['vip_sum'] += q.vip_sum
-                month_receipt[month_str]['pack_sum'] += q.pack_sum
-                month_receipt[month_str]['recharge_sum'] += q.recharge_sum
-                month_receipt[month_str]['total_sum'] += q.total_sum
+                if month_str == '2017-10':
+                    pass
+                month_receipt[month_str] = {}
+                month_receipt[month_str]['app_sum'] = q.app_sum
+                month_receipt[month_str]['premiere_sum'] = q.premiere_sum
+                month_receipt[month_str]['vip_sum'] = q.vip_sum
+                month_receipt[month_str]['pack_sum'] = q.pack_sum
+                month_receipt[month_str]['recharge_sum'] = q.recharge_sum
+                month_receipt[month_str]['total_sum'] = q.total_sum
 
         self.history_month = {
             'month': [k for k in month_receipt],

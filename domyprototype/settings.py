@@ -17,8 +17,6 @@ PRODUCTION = False
 # PRODUCTION = True
 
 # get password by environ var
-my_email_password = os.environ['MY_EMAIL_PASSWORD']
-my_mysql_password = os.environ['MY_MYSQL_PASSWORD']
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -96,10 +94,10 @@ WSGI_APPLICATION = 'domyprototype.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'prototype',
-        'USER': 'root',
-        'PASSWORD': my_mysql_password,
-        'HOST': '60.205.218.205'
+        'NAME': 'domyprototype',
+        'USER': 'wxy',
+        'PASSWORD': '123456',
+        'HOST': '60.206.137.157'
     }
 }
 
@@ -140,19 +138,21 @@ USE_TZ = False
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
-if PRODUCTION == True:
-    MEDIA_ROOT = '/tmp/media'
-    # MEDIA_ROOT = os.path.join(BASE_DIR, 'static')
+if PRODUCTION:
+    MEDIA_ROOT = '/usr/share/nginx/html/media'
+    STATIC_ROOT = '/root/my_workplace/domyprototype/static'
 else:
     STATICFILES_DIRS = (
         os.path.join(BASE_DIR, 'static'),
     )
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'static')
+
 
 # email settings
 
 EMAIL_HOST = 'smtp.mxhichina.com'
 EMAIL_HOST_USER = 'machine@wangxiyang.com'
-EMAIL_HOST_PASSWORD = my_email_password
+EMAIL_HOST_PASSWORD = 'Domybox123'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_FROM = 'machine@wangxiyang.com'
